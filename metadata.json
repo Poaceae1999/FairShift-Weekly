@@ -1,0 +1,5 @@
+{
+  "name": "FairShift Weekly",
+  "description": "An intelligent weekly shift scheduler that balances workload using smart algorithms.",
+  "requestFramePermissions": []
+}
