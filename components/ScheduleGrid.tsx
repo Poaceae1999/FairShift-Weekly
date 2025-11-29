@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { ScheduleState } from '../types';
 import { cn, formatDateWithDay } from '../utils';
-import { UserMinus, Calendar as CalendarIcon, ArrowLeftRight } from 'lucide-react';
+import { UserMinus, Calendar as CalendarIcon, ArrowLeftRight, Sparkles } from 'lucide-react';
 
 interface ScheduleGridProps {
   schedule: ScheduleState;
@@ -88,21 +88,66 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
     return cols;
   }, [schedule.roles]);
 
+  // Get date range for print header
+  const dateRange = useMemo(() => {
+    const dates = schedule.weekDates.filter(d => d);
+    if (dates.length === 0) return '';
+    const firstDate = dates[0];
+    const lastDate = dates[dates.length - 1];
+    return `${firstDate} ~ ${lastDate}`;
+  }, [schedule.weekDates]);
+
+  // Get today's date for footer
+  const printDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full print:border-none print:shadow-none print:h-auto print:overflow-visible print-container">
+      {/* Print Header - Only visible when printing */}
+      <div className="hidden print:block print-header mb-4">
+        <div className="flex items-center justify-between border-b-2 border-emerald-500 pb-3 mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center text-white print-logo">
+              <Sparkles size={22} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-800">FairShift Weekly Schedule</h1>
+              <p className="text-sm text-slate-500">Automated Fair Shift Distribution</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-medium text-slate-600">Schedule Period</p>
+            <p className="text-lg font-bold text-emerald-600">{dateRange}</p>
+          </div>
+        </div>
+        {/* Role Legend */}
+        <div className="flex flex-wrap gap-3 mb-3">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Roles:</span>
+          {schedule.roles.map(role => (
+            <span key={role.id} className={cn("px-2 py-0.5 rounded text-xs font-medium", role.color)}>
+              {role.name} ({role.requiredCount})
+            </span>
+          ))}
+        </div>
+      </div>
+
       <div className="overflow-auto flex-1 print:overflow-visible print:h-auto">
-        <table className="w-full min-w-[800px] border-collapse text-sm print:min-w-0 print:table-fixed">
-          <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm print:shadow-none print:bg-white print:static">
+        <table className="w-full min-w-[800px] border-collapse text-sm print:min-w-0 print:table-fixed print-table">
+          <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm print:shadow-none print:static">
             <tr>
-              <th className="p-4 text-center font-bold text-slate-600 border-b border-r border-slate-200 w-32 bg-slate-50 sticky left-0 z-20 print:bg-white print:text-black print:border-black print:static print:w-24">
-                Week / Date
+              <th className="p-4 text-center font-bold text-slate-600 border-b border-r border-slate-200 w-32 bg-slate-50 sticky left-0 z-20 print:static print:w-auto">
+                <span className="print:hidden">Week / Date</span>
+                <span className="hidden print:inline">Date</span>
               </th>
               {columns.map((col, idx) => (
-                <th key={`${col.roleId}-${col.slotIdx}`} className="p-3 text-center font-bold text-slate-700 border-b border-slate-200 min-w-[140px] print:text-black print:border-black print:min-w-0">
+                <th key={`${col.roleId}-${col.slotIdx}`} className="p-3 text-center font-bold text-slate-700 border-b border-slate-200 min-w-[140px] print:min-w-0">
                   <div className="flex flex-col items-center gap-1">
-                     <span className="uppercase tracking-wide text-xs text-slate-400 print:text-black">{col.roleName}</span>
+                     <span className="uppercase tracking-wide text-xs text-slate-400 print:text-slate-700">{col.roleName}</span>
                      <div className={cn("w-2 h-2 rounded-full mb-1 print:hidden", col.color.split(' ')[0])} />
-                     <span className="text-xs font-normal border px-1.5 rounded bg-white print:border-none">#{col.slotIdx + 1}</span>
+                     <span className="text-xs font-normal border px-1.5 rounded bg-white print:bg-transparent print:border-slate-300">#{col.slotIdx + 1}</span>
                   </div>
                 </th>
               ))}
@@ -114,23 +159,23 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
                const displayDate = formatDateWithDay(dateStr);
                
                return (
-                <tr key={weekIdx} className="hover:bg-slate-50/50 transition-colors print:hover:bg-white print:break-inside-avoid">
-                  <td className="p-4 border-b border-r border-slate-200 font-medium text-slate-700 bg-white sticky left-0 z-10 text-center print:border-black print:static">
+                <tr key={weekIdx} className="hover:bg-slate-50/50 transition-colors print:hover:bg-transparent print:break-inside-avoid">
+                  <td className="p-4 border-b border-r border-slate-200 font-medium text-slate-700 bg-white sticky left-0 z-10 text-center print:static print:p-2">
                     <div className="flex flex-col items-center group relative cursor-pointer">
-                      <span className="text-xs text-slate-400 uppercase tracking-wider mb-1 print:text-black print:hidden">Week {weekIdx + 1}</span>
-                      
+                      <span className="text-xs text-slate-400 uppercase tracking-wider mb-1 print:hidden">Week {weekIdx + 1}</span>
+
                       {/* Date Display */}
                       <div className="flex flex-col items-center">
-                        <span className="text-indigo-600 font-bold print:text-black text-sm whitespace-nowrap">
+                        <span className="text-indigo-600 font-bold print:text-slate-800 text-sm whitespace-nowrap">
                           {dateStr}
                         </span>
-                        <span className="text-xs text-slate-500 print:text-black">
+                        <span className="text-xs text-slate-500 print:text-slate-600 print:font-medium">
                           {displayDate.split('(')[1]?.replace(')', '') || ''}
                         </span>
                       </div>
 
                       {/* Invisible Date Input Trigger */}
-                      <input 
+                      <input
                         type="date"
                         value={dateStr}
                         onChange={(e) => onUpdateDate(weekIdx, e.target.value)}
@@ -153,10 +198,10 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
                     const isDragOver = dragOverAssignmentId === assignment?.id;
 
                     return (
-                      <td 
-                        key={`${weekIdx}-${col.roleId}-${col.slotIdx}`} 
+                      <td
+                        key={`${weekIdx}-${col.roleId}-${col.slotIdx}`}
                         className={cn(
-                          "p-2 border-b border-slate-100 print:border-black transition-colors",
+                          "p-2 border-b border-slate-100 transition-colors print:p-1",
                           isDragOver ? "bg-indigo-50" : ""
                         )}
                         onDragOver={(e) => assignment && handleDragOver(e, assignment.id)}
@@ -175,10 +220,10 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
                                 col.color,
                                 isSelected ? "ring-2 ring-indigo-500 ring-offset-1 z-10" : "border-transparent hover:border-slate-300 hover:shadow-sm",
                                 isDragOver ? "scale-105 shadow-md ring-2 ring-indigo-400 border-indigo-300 opacity-80" : "",
-                                "print:bg-white print:border-none print:text-black print:shadow-none print:p-0 print:text-sm"
+                                "print:border-none print:shadow-none print:p-1 print:text-xs print:rounded print:max-w-none"
                               )}
                             >
-                              <span>{getStaffName(assignment.staffId)}</span>
+                              <span className="print:font-medium">{getStaffName(assignment.staffId)}</span>
                             </button>
 
                             {/* Popover Menu - Hidden on Print */}
@@ -227,6 +272,24 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
         <span className="flex items-center gap-1"><ArrowLeftRight className="w-3 h-3" /> Drag & Drop names to swap shifts.</span>
         <span>•</span>
         <span>Click any name to reassign manually.</span>
+      </div>
+
+      {/* Print Footer - Only visible when printing */}
+      <div className="hidden print:block print-footer mt-4 pt-3 border-t border-slate-300">
+        <div className="flex justify-between items-center text-xs text-slate-500">
+          <div className="flex items-center gap-2">
+            <span className="font-medium">FairShift Weekly</span>
+            <span>•</span>
+            <span>Fair & Automated Scheduling</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span>Staff: {schedule.staff.length}</span>
+            <span>•</span>
+            <span>Weeks: {schedule.weeks}</span>
+            <span>•</span>
+            <span>Generated: {printDate}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
