@@ -22,7 +22,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
     setWeekNotes(prev => ({ ...prev, [weekIdx]: value }));
   };
 
-  // Auto-scale content to fit A4 page (both width and height) before printing
+  // Auto-scale content to fit A4 page - Priority: Height > Width > Font
   useEffect(() => {
     const handleBeforePrint = () => {
       if (printContentRef.current) {
@@ -35,20 +35,25 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
         const contentWidth = content.scrollWidth;
         const contentHeight = content.scrollHeight;
 
-        // Calculate scale factors for both dimensions
-        const scaleX = a4Width / contentWidth;
-        const scaleY = a4Height / contentHeight;
+        // Priority 1: Scale to fill page HEIGHT first
+        let scaleY = a4Height / contentHeight;
 
-        // Use the smaller scale to ensure content fits, but cap at 1.0 (don't enlarge)
-        // If content is smaller than page, scale up to fill (max 1.2x)
-        let scale = Math.min(scaleX, scaleY);
-        scale = Math.min(scale, 1.2); // Don't scale up more than 20%
+        // Priority 2: Check if width still fits after height scaling
+        const scaledWidth = contentWidth * scaleY;
+        let scale = scaleY;
 
-        if (scale !== 1) {
-          content.style.transform = `scale(${scale})`;
-          content.style.transformOrigin = 'top left';
-          content.style.width = `${100 / scale}%`;
+        // If scaled content is too wide, use width-based scale instead
+        if (scaledWidth > a4Width) {
+          scale = a4Width / contentWidth;
         }
+
+        // Cap maximum scale to 1.5x (don't enlarge too much)
+        scale = Math.min(scale, 1.5);
+
+        // Apply scale
+        content.style.transform = `scale(${scale})`;
+        content.style.transformOrigin = 'top left';
+        content.style.width = `${100 / scale}%`;
       }
     };
 
@@ -158,7 +163,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
   });
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full print:border-none print:shadow-none print:h-auto print:overflow-visible print-container">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full overflow-auto print:border-none print:shadow-none print:h-auto print:overflow-visible print-container">
       {/* Print Scale Wrapper */}
       <div ref={printContentRef} className="print-scale-wrapper">
       {/* Print Header - Only visible when printing */}
