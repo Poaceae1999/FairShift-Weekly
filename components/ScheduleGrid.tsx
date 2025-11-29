@@ -105,13 +105,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
     return `${firstDate} ~ ${lastDate}`;
   }, [schedule.weekDates]);
 
-  // Get today's date for footer
-  const printDate = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full overflow-auto print:border-none print:shadow-none print:h-auto print:overflow-visible print-container">
       {/* Print Content Wrapper */}
@@ -295,24 +288,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
           </tbody>
         </table>
       </div>
-      {/* Print Footer - Only visible when printing */}
-      <div className="hidden print:block print-footer mt-4 pt-3 border-t border-slate-300">
-        <div className="flex justify-between items-center text-xs text-slate-500">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">FairShift Weekly</span>
-            <span>•</span>
-            <span>Fair & Automated Scheduling</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span>Staff: {schedule.staff.length}</span>
-            <span>•</span>
-            <span>Weeks: {schedule.weeks}</span>
-            <span>•</span>
-            <span>Generated: {printDate}</span>
-          </div>
-        </div>
-      </div>
-      </div>{/* End of print-scale-wrapper */}
+      </div>{/* End of print-content-wrapper */}
 
       <div className="p-3 bg-slate-50 text-xs text-center text-slate-400 border-t border-slate-200 flex justify-center gap-4 print:hidden">
         <span className="flex items-center gap-1"><ArrowLeftRight className="w-3 h-3" /> Drag & Drop names to swap shifts.</span>
