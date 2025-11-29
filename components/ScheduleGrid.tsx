@@ -313,12 +313,12 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
                     );
                   })}
                   {/* Notes Column */}
-                  <td className="p-2 border-b border-slate-100 print:p-1 align-top">
+                  <td className="p-2 border-b border-slate-100 print:p-1 align-middle">
                     <textarea
                       value={weekNotes[weekIdx] || ''}
                       onChange={(e) => handleNoteChange(weekIdx, e.target.value)}
                       placeholder="..."
-                      className="w-full min-h-[40px] p-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 print:bg-transparent print:border-none print:p-0 print:min-h-0 print:resize-none"
+                      className="w-full min-h-[40px] p-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 text-center print:bg-transparent print:border-none print:p-0 print:min-h-0 print:resize-none print:text-[12px]"
                       rows={2}
                     />
                   </td>
