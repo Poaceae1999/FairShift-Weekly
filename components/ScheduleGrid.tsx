@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ScheduleState } from '../types';
 import { cn, formatDateWithDay } from '../utils';
 import { UserMinus, Calendar as CalendarIcon, ArrowLeftRight, Sparkles, FileText } from 'lucide-react';
@@ -15,58 +15,13 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
   const [dragOverAssignmentId, setDragOverAssignmentId] = useState<string | null>(null);
   const [weekNotes, setWeekNotes] = useState<Record<number, string>>({});
-  const printContentRef = useRef<HTMLDivElement>(null);
 
   // Handler for updating notes per week
   const handleNoteChange = (weekIdx: number, value: string) => {
     setWeekNotes(prev => ({ ...prev, [weekIdx]: value }));
   };
 
-  // Auto-scale content to fit A4 page - Priority: Height > Width > Font
-  useEffect(() => {
-    const handleBeforePrint = () => {
-      if (printContentRef.current) {
-        const content = printContentRef.current;
-        // A4 dimensions at 96 DPI minus 0.5cm margins on each side
-        // Width: 210mm - 1cm = 200mm ≈ 756px
-        // Height: 297mm - 1cm = 287mm ≈ 1084px
-        const a4Width = 756;
-        const a4Height = 1084;
-        const contentWidth = content.scrollWidth;
-        const contentHeight = content.scrollHeight;
-
-        // Priority: Height > Width
-        // Scale Y to fill page height (primary priority)
-        let scaleY = a4Height / contentHeight;
-        // Scale X to fit page width
-        let scaleX = a4Width / contentWidth;
-
-        // Cap scales to reasonable limits
-        scaleY = Math.min(scaleY, 1.8); // Don't enlarge height more than 1.8x
-        scaleX = Math.min(scaleX, 1.8); // Don't enlarge width more than 1.8x
-
-        // Apply non-uniform scaling: height priority, width adjusts independently
-        content.style.transform = `scale(${scaleX}, ${scaleY})`;
-        content.style.transformOrigin = 'top left';
-        content.style.width = `${100 / scaleX}%`;
-      }
-    };
-
-    const handleAfterPrint = () => {
-      if (printContentRef.current) {
-        printContentRef.current.style.transform = '';
-        printContentRef.current.style.width = '';
-      }
-    };
-
-    window.addEventListener('beforeprint', handleBeforePrint);
-    window.addEventListener('afterprint', handleAfterPrint);
-
-    return () => {
-      window.removeEventListener('beforeprint', handleBeforePrint);
-      window.removeEventListener('afterprint', handleAfterPrint);
-    };
-  }, []);
+  // No JavaScript scaling - use pure CSS for print layout
 
   const handleSlotClick = (assignmentId: string) => {
     setSelectedAssignment(assignmentId === selectedAssignment ? null : assignmentId);
@@ -159,8 +114,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full overflow-auto print:border-none print:shadow-none print:h-auto print:overflow-visible print-container">
-      {/* Print Scale Wrapper */}
-      <div ref={printContentRef} className="print-scale-wrapper">
+      {/* Print Content Wrapper */}
+      <div className="print-content-wrapper">
       {/* Print Header - Only visible when printing */}
       <div className="hidden print:block print-header mb-4">
         <div className="flex items-center justify-between border-b-2 border-emerald-500 pb-3 mb-3">
