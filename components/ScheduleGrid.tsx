@@ -14,8 +14,13 @@ interface ScheduleGridProps {
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignment, onUpdateDate, onSwapAssignments }) => {
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
   const [dragOverAssignmentId, setDragOverAssignmentId] = useState<string | null>(null);
-  const [notes, setNotes] = useState<string>('');
+  const [weekNotes, setWeekNotes] = useState<Record<number, string>>({});
   const printContentRef = useRef<HTMLDivElement>(null);
+
+  // Handler for updating notes per week
+  const handleNoteChange = (weekIdx: number, value: string) => {
+    setWeekNotes(prev => ({ ...prev, [weekIdx]: value }));
+  };
 
   // Auto-scale content to fit A4 page width before printing
   useEffect(() => {
@@ -189,6 +194,13 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
                   </div>
                 </th>
               ))}
+              <th className="p-3 text-center font-bold text-slate-700 border-b border-slate-200 min-w-[120px] print:min-w-0">
+                <div className="flex flex-col items-center gap-1">
+                  <span className="uppercase tracking-wide text-xs text-slate-400 print:text-slate-700">Notes</span>
+                  <FileText className="w-3 h-3 text-slate-400 print:hidden" />
+                  <span className="text-xs font-normal print:hidden">備注</span>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -300,27 +312,22 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
                       </td>
                     );
                   })}
+                  {/* Notes Column */}
+                  <td className="p-2 border-b border-slate-100 print:p-1 align-top">
+                    <textarea
+                      value={weekNotes[weekIdx] || ''}
+                      onChange={(e) => handleNoteChange(weekIdx, e.target.value)}
+                      placeholder="..."
+                      className="w-full min-h-[40px] p-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 print:bg-transparent print:border-none print:p-0 print:min-h-0 print:resize-none"
+                      rows={2}
+                    />
+                  </td>
                 </tr>
                );
             })}
           </tbody>
         </table>
       </div>
-      {/* Notes Section - Editable and visible in both screen and print */}
-      <div className="mt-4 p-4 border border-slate-200 rounded-lg bg-slate-50 print:bg-white print-notes">
-        <div className="flex items-center gap-2 mb-2 print-notes-title">
-          <FileText className="w-4 h-4 text-slate-500 print:hidden" />
-          <span className="text-sm font-semibold text-slate-600">Notes / 備注</span>
-        </div>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Add notes here... (e.g., special arrangements, holidays, reminders)"
-          className="w-full min-h-[80px] p-3 text-sm text-slate-700 bg-white border border-slate-200 rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent print:border-none print:p-0 print:bg-transparent print:resize-none print-notes-content"
-          rows={3}
-        />
-      </div>
-
       {/* Print Footer - Only visible when printing */}
       <div className="hidden print:block print-footer mt-4 pt-3 border-t border-slate-300">
         <div className="flex justify-between items-center text-xs text-slate-500">
