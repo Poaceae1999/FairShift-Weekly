@@ -35,25 +35,20 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
         const contentWidth = content.scrollWidth;
         const contentHeight = content.scrollHeight;
 
-        // Priority 1: Scale to fill page HEIGHT first
+        // Priority: Height > Width
+        // Scale Y to fill page height (primary priority)
         let scaleY = a4Height / contentHeight;
+        // Scale X to fit page width
+        let scaleX = a4Width / contentWidth;
 
-        // Priority 2: Check if width still fits after height scaling
-        const scaledWidth = contentWidth * scaleY;
-        let scale = scaleY;
+        // Cap scales to reasonable limits
+        scaleY = Math.min(scaleY, 1.8); // Don't enlarge height more than 1.8x
+        scaleX = Math.min(scaleX, 1.8); // Don't enlarge width more than 1.8x
 
-        // If scaled content is too wide, use width-based scale instead
-        if (scaledWidth > a4Width) {
-          scale = a4Width / contentWidth;
-        }
-
-        // Cap maximum scale to 1.5x (don't enlarge too much)
-        scale = Math.min(scale, 1.5);
-
-        // Apply scale
-        content.style.transform = `scale(${scale})`;
+        // Apply non-uniform scaling: height priority, width adjusts independently
+        content.style.transform = `scale(${scaleX}, ${scaleY})`;
         content.style.transformOrigin = 'top left';
-        content.style.width = `${100 / scale}%`;
+        content.style.width = `${100 / scaleX}%`;
       }
     };
 
