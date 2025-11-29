@@ -227,7 +227,7 @@ const App: React.FC = () => {
 
         {activeTab === 'schedule' && currentState && (
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 h-[calc(100vh-8rem)] animate-in fade-in duration-500 print:block print:h-auto">
-            <div className="h-full overflow-hidden flex flex-col gap-4 print:h-auto print:overflow-visible print:block">
+            <div className="h-full overflow-auto flex flex-col gap-4 print:h-auto print:overflow-visible print:block">
                <ScheduleGrid 
                  schedule={currentState} 
                  onUpdateAssignment={handleUpdateAssignment}

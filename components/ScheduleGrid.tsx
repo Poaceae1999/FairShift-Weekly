@@ -22,17 +22,29 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
     setWeekNotes(prev => ({ ...prev, [weekIdx]: value }));
   };
 
-  // Auto-scale content to fit A4 page width before printing
+  // Auto-scale content to fit A4 page (both width and height) before printing
   useEffect(() => {
     const handleBeforePrint = () => {
       if (printContentRef.current) {
         const content = printContentRef.current;
-        // A4 width in pixels at 96 DPI minus margins (210mm - 2cm = 190mm ≈ 718px)
-        const a4Width = 718;
+        // A4 dimensions at 96 DPI minus 0.5cm margins on each side
+        // Width: 210mm - 1cm = 200mm ≈ 756px
+        // Height: 297mm - 1cm = 287mm ≈ 1084px
+        const a4Width = 756;
+        const a4Height = 1084;
         const contentWidth = content.scrollWidth;
+        const contentHeight = content.scrollHeight;
 
-        if (contentWidth > a4Width) {
-          const scale = a4Width / contentWidth;
+        // Calculate scale factors for both dimensions
+        const scaleX = a4Width / contentWidth;
+        const scaleY = a4Height / contentHeight;
+
+        // Use the smaller scale to ensure content fits, but cap at 1.0 (don't enlarge)
+        // If content is smaller than page, scale up to fill (max 1.2x)
+        let scale = Math.min(scaleX, scaleY);
+        scale = Math.min(scale, 1.2); // Don't scale up more than 20%
+
+        if (scale !== 1) {
           content.style.transform = `scale(${scale})`;
           content.style.transformOrigin = 'top left';
           content.style.width = `${100 / scale}%`;
@@ -313,12 +325,12 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule, onUpdateAssignmen
                     );
                   })}
                   {/* Notes Column */}
-                  <td className="p-2 border-b border-slate-100 print:p-1 align-top">
+                  <td className="p-2 border-b border-slate-100 print:p-1 align-middle">
                     <textarea
                       value={weekNotes[weekIdx] || ''}
                       onChange={(e) => handleNoteChange(weekIdx, e.target.value)}
                       placeholder="..."
-                      className="w-full min-h-[40px] p-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 print:bg-transparent print:border-none print:p-0 print:min-h-0 print:resize-none"
+                      className="w-full min-h-[40px] p-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 text-center print:bg-transparent print:border-none print:p-0 print:min-h-0 print:resize-none print:text-[12px]"
                       rows={2}
                     />
                   </td>
